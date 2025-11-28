@@ -69,7 +69,7 @@ with col1:
     st.markdown("**Enter your Niche/Topic:**")
     topic = st.text_input("Enter your Niche/Topic", placeholder="e.g. fitness, coffee, pets, study motivation", label_visibility="collapsed")
 with col2:
-    st.markdown("**Number of ideas**")
+    st.markdown("**Number of ideas:**")
     num = st.selectbox("Number of ideas:", [1, 2, 3, 4, 5], index=2, label_visibility="collapsed")
 
 if st.button("Generate Viral Posts", type="primary", use_container_width=True):
