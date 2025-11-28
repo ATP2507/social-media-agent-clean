@@ -1,4 +1,3 @@
-
 import streamlit as st
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import PromptTemplate
@@ -11,23 +10,16 @@ from datetime import datetime
 
 gemini_api_key = st.secrets["GEMINI_API_KEY"]
 
-
 llm = ChatGoogleGenerativeAI(
     model="gemini-2.5-flash",
     google_api_key=gemini_api_key,
     temperature=0.9
 )
 
-
 sheets_enabled = False
 sheet = None
 try:
-
-    scopes = [
-        "https://www.googleapis.com/auth/spreadsheets",
-        "https://www.googleapis.com/auth/drive"
-    ]
-    
+    scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
     if "GOOGLE_CREDENTIALS" in st.secrets:
         creds_dict = json.loads(st.secrets["GOOGLE_CREDENTIALS"])
         creds = Credentials.from_service_account_info(creds_dict, scopes=scopes)
@@ -35,17 +27,8 @@ try:
         sheet = gc.open("SocialMediaPlans").sheet1
         sheets_enabled = True
         st.success("Google Sheets connected! Auto-save ON")
-    else:
-        cred_path = os.path.join(os.path.dirname(__file__), "google-credentials.json")
-        if os.path.exists(cred_path):
-            creds = Credentials.from_service_account_file(cred_path, scopes=scopes)
-            gc = gspread.authorize(creds)
-            sheet = gc.open("SocialMediaPlans").sheet1
-            sheets_enabled = True
-            st.success("Google Sheets connected! Auto-save ON")
 except Exception as e:
     st.warning(f"Sheets error: {e}")
-
 
 prompt = PromptTemplate.from_template(
     """You are a top social media strategist.
@@ -68,25 +51,34 @@ Start directly with 1. No intro text."""
 
 chain = prompt | llm | StrOutputParser()
 
+st.set_page_config(page_title="Sochh-ial Agent by Athira", page_icon="rocket", layout="centered")
 
-st.set_page_config(page_title="Social Agent by Athira", page_icon="rocket", layout="centered")
-st.title("Sochh -ial Agent")
-st.markdown("Save timee & boost engagement with AI-generated viral post ideas!")
-st.caption("Made with love by **Athira TP**")
+st.title("Sochh-ial Agent 🚀")
+st.markdown("### Save time & boost engagement with AI-generated viral post ideas :)")
+
+st.info("""
+**Project Overview :**  
+This is an AI-powered Social Media Content Generator built using Google Gemini 2.5 Flash, LangChain, and Streamlit.  
+It instantly creates YouTube/Instagram/TikTok ideas with captions, best posting times, and hashtags which can be downloaded.(Data is also stored in Google Sheets for backend)
+Perfect for creators, brands, and marketers.
+""")
 
 col1, col2 = st.columns([3, 1])
 with col1:
-    topic = st.text_input("Enter your topic", placeholder="e.g. fitness, coffee, pets, study motivation")
+    st.markdown("**Enter your Niche/Topic**")
+    topic = st.text_input("Enter your Niche/Topic", placeholder="e.g. fitness, coffee, pets, study motivation", label_visibility="collapsed")
 with col2:
-    num = st.selectbox("Number of ideas", [1, 2, 3, 4, 5], index=2)
+    st.markdown("**Number of ideas**")
+    num = st.selectbox("Number of ideas", [1, 2, 3, 4, 5], index=2, label_visibility="collapsed")
 
 if st.button("Generate Viral Posts", type="primary", use_container_width=True):
     if not topic.strip():
         st.error("Please enter a topic!")
     else:
-        with st.spinner("Creating your content plan..."):
+        with st.spinner("Creating your viral content plan..."):
             result = chain.invoke({"topic": topic, "num": num})
 
+        st.balloons()
         st.success(f"Here are your {num} post ideas!")
 
         blocks = [b.strip() for b in result.split("\n\n") if b.strip()]
@@ -97,34 +89,22 @@ if st.button("Generate Viral Posts", type="primary", use_container_width=True):
             best_time = next((l.split("Best time:")[1].strip() for l in lines if "Best time:" in l), "Any time")
             hashtags = next((l.split("Hashtags:")[1].strip() for l in lines if "Hashtags:" in l), "")
 
-            with st.container():
-                st.markdown(f"#### Idea {i}: {idea_desc}")
+            with st.container(border=True):
+                st.markdown(f"**Idea {i}:** {idea_desc}")
                 st.markdown(f"**{caption}**")
                 st.caption(f"Best time: {best_time}  •  {hashtags}")
-                st.markdown("---")
 
-        
         if sheets_enabled and sheet:
             try:
                 clean_text = result.replace("\n", " | ")
-                sheet.append_row([
-                    datetime.now().strftime("%Y-%m-%d %H:%M"),
-                    topic,
-                    clean_text[:10000]
-                ])
-                st.toast("Saved to Google Sheets!", icon="✅")
+                sheet.append_row([datetime.now().strftime("%Y-%m-%d %H:%M"), topic, clean_text[:10000]])
+                st.toast("Saved to Google Sheets!", icon="success")
             except Exception as e:
-                st.error(f"Save failed: {e}")  
+                st.error(f"Save failed: {e}")
         else:
             st.info("Auto-save disabled — add GOOGLE_CREDENTIALS in Secrets to enable")
 
-    
-        st.download_button(
-            label="Download Full Plan",
-            data=result,
-            file_name=f"{topic.replace(' ', '_')}_social_plan.txt",
-            mime="text/plain"
-        )
+        st.download_button("Download Full Plan", data=result, file_name=f"{topic.replace(' ', '_')}_social_plan.txt", mime="text/plain", use_container_width=True)
 
 st.markdown("---")
-st.caption("© 2025 Athira TP ")
+st.caption("Athira TP • Built with Google Gemini + Streamlit")
