@@ -4,10 +4,10 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 import gspread
+from google.oauth2.service_account import Credentials
 import json
 import os
 from datetime import datetime
-
 
 gemini_api_key = st.secrets["GEMINI_API_KEY"]
 
@@ -22,21 +22,29 @@ llm = ChatGoogleGenerativeAI(
 sheets_enabled = False
 sheet = None
 try:
+
+    scopes = [
+        "https://www.googleapis.com/auth/spreadsheets",
+        "https://www.googleapis.com/auth/drive"
+    ]
+    
     if "GOOGLE_CREDENTIALS" in st.secrets:
         creds_dict = json.loads(st.secrets["GOOGLE_CREDENTIALS"])
-        gc = gspread.service_account_from_dict(creds_dict)
+        creds = Credentials.from_service_account_info(creds_dict, scopes=scopes)
+        gc = gspread.authorize(creds)
         sheet = gc.open("SocialMediaPlans").sheet1
         sheets_enabled = True
         st.success("Google Sheets connected! Auto-save ON")
     else:
         cred_path = os.path.join(os.path.dirname(__file__), "google-credentials.json")
         if os.path.exists(cred_path):
-            gc = gspread.service_account(filename=cred_path)
+            creds = Credentials.from_service_account_file(cred_path, scopes=scopes)
+            gc = gspread.authorize(creds)
             sheet = gc.open("SocialMediaPlans").sheet1
             sheets_enabled = True
             st.success("Google Sheets connected! Auto-save ON")
 except Exception as e:
-    st.warning(f"Sheets not connected: {e}")
+    st.warning(f"Sheets error: {e}")
 
 
 prompt = PromptTemplate.from_template(
@@ -62,8 +70,8 @@ chain = prompt | llm | StrOutputParser()
 
 
 st.set_page_config(page_title="Social Agent by Athira", page_icon="rocket", layout="centered")
-st.title("Sochh -ial Agent 🚀")
-st.markdown("### Save timee & boost engagement with AI-generated viral post ideas!")
+st.title("Sochh -ial Agent")
+st.markdown("Save timee & boost engagement with AI-generated viral post ideas!")
 st.caption("Made with love by **Athira TP**")
 
 col1, col2 = st.columns([3, 1])
@@ -106,9 +114,11 @@ if st.button("Generate Viral Posts", type="primary", use_container_width=True):
                 ])
                 st.toast("Saved to Google Sheets!", icon="✅")
             except Exception as e:
-                st.error(f"Save failed: {e}")
+                st.error(f"Save failed: {e}")  
+        else:
+            st.info("Auto-save disabled — add GOOGLE_CREDENTIALS in Secrets to enable")
 
-        
+    
         st.download_button(
             label="Download Full Plan",
             data=result,
@@ -117,4 +127,4 @@ if st.button("Generate Viral Posts", type="primary", use_container_width=True):
         )
 
 st.markdown("---")
-st.caption("Happy Posting! 🚀 | Developed by Athira TP")
+st.caption("© 2025 Athira TP ")
