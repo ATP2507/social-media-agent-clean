@@ -53,7 +53,7 @@ chain = prompt | llm | StrOutputParser()
 
 st.set_page_config(page_title="Sochh-ial Agent by Athira", page_icon="rocket", layout="centered")
 
-st.title("Sochh-ial Agent 🚀")
+st.title("Sochh-ial Agent :)")
 st.markdown("### Save time & boost engagement with AI-generated viral post ideas :)")
 
 st.info("""
@@ -98,7 +98,7 @@ if st.button("Generate Viral Posts", type="primary", use_container_width=True):
             try:
                 clean_text = result.replace("\n", " | ")
                 sheet.append_row([datetime.now().strftime("%Y-%m-%d %H:%M"), topic, clean_text[:10000]])
-                st.toast("Saved to Google Sheets!", icon="success")
+                st.toast("Saved to Google Sheets!", icon="✅")
             except Exception as e:
                 st.error(f"Save failed: {e}")
         else:
