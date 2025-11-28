@@ -53,13 +53,14 @@ chain = prompt | llm | StrOutputParser()
 
 st.set_page_config(page_title="Sochh-ial Agent by Athira", page_icon="rocket", layout="centered")
 
-st.title("Sochh-ial Agent :)")
+st.title("Sochh-ial Agent 🚀")
 st.markdown("### Save time & boost engagement with AI-generated viral post ideas :)")
 
 st.info("""
 **Project Overview :**  
 This is an AI-powered Social Media Content Generator built using Google Gemini 2.5 Flash, LangChain, and Streamlit.  
 It instantly creates YouTube/Instagram/TikTok ideas with captions, best posting times, and hashtags which can be downloaded.(Data is also stored in Google Sheets for backend)
+        
 Perfect for creators, brands, and marketers.
 """)
 
